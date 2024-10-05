@@ -1,0 +1,9 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+   - name: install unzip to ubuntu
+     ansible.builtin.apt:
+      name: unzip
+      state: absent
+

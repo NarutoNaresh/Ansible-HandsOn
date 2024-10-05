@@ -1,0 +1,9 @@
+# sar_output.txt.j2
+
+CPU and Memory Usage Report for {{ inventory_hostname }} on {{ current_date_time.stdout }}:
+
+-----------CPU--------------
+{{ sar_all_cpu.stdout }}
+
+-----------MEM--------------
+{{ sar_all_mem.stdout }}

@@ -1,0 +1,9 @@
+---
+- name: Check server uptime and log results
+  hosts: all  # Or the appropriate group/host(s) for your EC2 instances
+  become: yes  # To run the commands as sudo
+  gather_facts: no  # Set to 'no' if you don't want to gather system facts automatically
+
+  roles:
+    - serveruptime
+

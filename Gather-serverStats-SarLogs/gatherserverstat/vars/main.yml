@@ -1,0 +1,5 @@
+---
+# vars file for gatherserverstat
+dump_dir: "/tmp/dump"  # Define your desired dump directory
+command: "sar -u 1 5"
+command1: "sar -r 1 5"

@@ -1,0 +1,57 @@
+---
+- name: Update system and apply security updates on EC2 instances
+  hosts: prod
+  become: yes
+  gather_facts: yes
+  tasks:
+    - name: Get current date time
+      shell: date +"%Y%m%d%H%M%S"
+      register: current_date_time
+
+    - name: Gather list of upgradable packages (Debian/Ubuntu)
+      shell: apt list --upgradable
+      register: upgradable_packages
+      changed_when: false  # Do not mark this task as changed
+      when: ansible_os_family == "Debian"
+
+    - name: Set fact for security updates
+      set_fact:
+        security_updates: "{{ upgradable_packages.stdout_lines | select('search', 'security') | list }}"
+      when: upgradable_packages.stdout is defined and ansible_os_family == "Debian"
+
+    - name: Debug security updates found
+      debug:
+        msg: "Found {{ security_updates | length }} security updates."
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure the system is updated (Debian/Ubuntu)
+      apt:
+        update_cache: yes
+        upgrade: dist
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure security updates are applied (Debian/Ubuntu)
+      apt:
+        upgrade: dist
+        only-upgrade: yes
+        pkg: "{{ item }}"
+      loop: "{{ security_updates }}"
+      when: ansible_os_family == "Debian" and security_updates | length > 0
+
+    - name: Ensure the system is updated (RedHat/CentOS)
+      yum:
+        name: "*"
+        state: latest
+      when: ansible_os_family == "RedHat"
+
+    - name: Clean up unused packages (Debian/Ubuntu)
+      apt:
+        autoremove: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Clean up unused packages (RedHat/CentOS)
+      yum:
+        name: "*"
+        state: absent
+      when: ansible_os_family == "RedHat"
+

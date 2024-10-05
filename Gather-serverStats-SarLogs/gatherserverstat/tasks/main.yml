@@ -1,0 +1,36 @@
+---
+# tasks file for gatherserverstat
+- name: Get current date time
+  shell: date +"%Y%m%d%H%M%S"
+  register: current_date_time
+
+- name: Gather sar-cpu information
+  command: "{{ command }}"  # Ensure 'command' variable is defined somewhere - use -e or vars file
+  register: sar_all_cpu
+
+- name: Gather sar-memory information
+  command: "{{ command1}}"
+  register: sar_all_mem  
+- name: Create dump directory
+  file: 
+    path: "{{ dump_dir }}"  
+    state: directory
+    mode: '744'
+
+- name: Template file
+  template: 
+    src: sar_output.txt.j2  
+    dest: "{{ dump_dir }}/sar-{{ inventory_hostname }}-{{ current_date_time.stdout }}.txt"
+
+- name: Output-show
+  debug:
+    msg: 
+      - "{{sar_all_cpu}}"
+      - "{{sar_all_mem}}"
+      
+- name: Fetch the output file
+  fetch: 
+    src: "{{ dump_dir }}/sar-{{ inventory_hostname }}-{{ current_date_time.stdout }}.txt"
+    dest: "./sar-{{ inventory_hostname }}-{{ current_date_time.stdout }}.txt"  # Local path to save the file
+    flat: yes
+
